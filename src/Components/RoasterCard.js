@@ -66,37 +66,36 @@ export default function RoasterCard({ roaster, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col justify-between cursor-pointer hover:shadow-lg transition"
+      className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col justify-between cursor-pointer hover:shadow-lg transition w-full max-w-xs mx-auto"
     >
-      <div className="relative p-4">
+      <div className="relative">
         {featured && (
-          <span className="absolute top-3 left-3 bg-gray-50 text-gray-800 text-xs font-medium px-3 py-1 rounded-full shadow">
+          <span className="absolute top-3 left-3 bg-gray-50 text-gray-800 text-xs font-medium px-3 py-1 rounded-full shadow z-10">
             ✨ Featured
           </span>
         )}
         {top100 && (
-          <span className="absolute top-3 right-3 bg-gray-50 text-gray-800 text-xs font-medium px-3 py-1 rounded-full shadow">
+          <span className="absolute top-3 right-3 bg-gray-50 text-gray-800 text-xs font-medium px-3 py-1 rounded-full shadow z-10">
             🌍 Top 100 Roaster
           </span>
         )}
 
-        <div className="relative w-full h-48">
+        <div className="relative w-full h-40 sm:h-48 md:h-52 bg-white">
           <Image
             src={imageUrl}
             alt={name}
             fill
-            className="object-contain mx-auto"
+            className="object-contain p-4"
             sizes="(max-width: 768px) 100vw, 300px"
           />
         </div>
       </div>
 
       <div className="bg-gray-50 px-4 py-3 rounded-b-2xl">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center mb-1">
           <h2 className="font-semibold text-sm">{name}</h2>
-          <span className="text-sm text-gray-700">
-            {location}
-            {location && country ? ',' : ''} {country}
+          <span className="text-sm text-gray-700 text-right">
+            {location}{location && country ? ', ' : ''}{country}
           </span>
         </div>
 
