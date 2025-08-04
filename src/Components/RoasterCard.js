@@ -1,3 +1,7 @@
+'use client';
+
+import Image from 'next/image';
+
 export default function RoasterCard({ roaster, onClick }) {
   const {
     name,
@@ -9,10 +13,9 @@ export default function RoasterCard({ roaster, onClick }) {
     ratingCount,
     country,
     likes,
-    countryFlag = "🇺🇸",
+    countryFlag = '🇺🇸',
   } = roaster;
 
-  // Helper to generate star icons
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
@@ -77,22 +80,27 @@ export default function RoasterCard({ roaster, onClick }) {
           </span>
         )}
 
-        <img
-          src={imageUrl}
-          alt={name}
-          className="w-full object-contain h-48 mx-auto"
-        />
+        <div className="relative w-full h-48">
+          <Image
+            src={imageUrl}
+            alt={name}
+            fill
+            className="object-contain mx-auto"
+            sizes="(max-width: 768px) 100vw, 300px"
+          />
+        </div>
       </div>
 
       <div className="bg-gray-50 px-4 py-3 rounded-b-2xl">
         <div className="flex justify-between items-center mb-2">
           <h2 className="font-semibold text-sm">{name}</h2>
           <span className="text-sm text-gray-700">
-            {location}{location && country ? ',' : ''} {country}
+            {location}
+            {location && country ? ',' : ''} {country}
           </span>
         </div>
 
-        {ratingCount > 0 && typeof rating === "number" ? (
+        {ratingCount > 0 && typeof rating === 'number' ? (
           <div className="flex items-center text-sm mt-1 gap-1">
             <span className="text-gray-700 font-medium">{rating.toFixed(1)}</span>
             <div className="flex items-center">{renderStars(rating)}</div>

@@ -63,7 +63,7 @@ export default async function Home() {
       <h4 className="text-sm font-semibold mb-3 uppercase">Quick Links</h4>
       <ul className="space-y-2 text-sm">
         <li>
-          <Link href="/#featured" className="hover:underline">
+          <Link href="/#featured">Featured Roasters</Link>
             Featured Roasters
           </Link>
         </li>

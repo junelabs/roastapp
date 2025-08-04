@@ -9,10 +9,8 @@ export default function RoasterModal({ roaster, onClose }) {
   const [rating, setRating] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [avgRating, setAvgRating] = useState(roaster?.rating || null);
+  const [avgRating, setAvgRating] = useState(null);
   const [ratingCount, setRatingCount] = useState(0);
-
-  if (!roaster) return null;
 
   const {
     name,
@@ -27,11 +25,11 @@ export default function RoasterModal({ roaster, onClose }) {
     coffees,
     website,
     _id,
-  } = roaster;
+  } = roaster || {};
 
   useEffect(() => {
+    if (!_id) return;
     const fetchAvgRating = async () => {
-      if (!_id) return;
       const { data, error } = await supabase
         .from('roaster_ratings')
         .select('rating')
@@ -55,7 +53,6 @@ export default function RoasterModal({ roaster, onClose }) {
 
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData?.session?.user;
-
     if (!user) {
       alert('You must be logged in to submit a rating.');
       setLoading(false);
@@ -63,6 +60,7 @@ export default function RoasterModal({ roaster, onClose }) {
     }
 
     const userId = user.id;
+
     const { data: recentRatings, error: fetchError } = await supabase
       .from('roaster_ratings')
       .select('*')
@@ -70,14 +68,7 @@ export default function RoasterModal({ roaster, onClose }) {
       .eq('roaster_id', _id)
       .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
 
-    if (fetchError) {
-      console.error('Error checking ratings:', fetchError);
-      alert('Could not verify recent ratings. Try again later.');
-      setLoading(false);
-      return;
-    }
-
-    if (recentRatings.length > 0) {
+    if (fetchError || recentRatings.length > 0) {
       alert('You already rated this roaster in the past 24 hours.');
       setLoading(false);
       return;
@@ -99,6 +90,8 @@ export default function RoasterModal({ roaster, onClose }) {
       setRating(null);
     }
   };
+
+  if (!roaster) return null;
 
   return (
     <Transition.Root show={!!roaster} as={Fragment}>
@@ -136,7 +129,6 @@ export default function RoasterModal({ roaster, onClose }) {
                             src={imageUrl}
                             alt={name}
                             fill
-                            priority
                             className="object-contain p-2"
                           />
                         </div>

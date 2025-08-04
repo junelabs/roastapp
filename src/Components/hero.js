@@ -9,9 +9,7 @@ export default function Hero() {
       <div className="relative max-w-7xl mx-auto px-6 py-24 flex flex-col lg:flex-row items-center justify-between">
         {/* Left side */}
         <div className="relative z-10 max-w-4xl">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-            Discover the world&#39;s best coffee roasters.
-          </h1>
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4">Discover the world&apos;s best coffee roasters.</h1>
           <p className="text-lg sm:text-xl mb-6 max-w-2xl">
             Find trusted roasters, explore unique coffees, and learn from in-depth profiles — all curated for true coffee enthusiasts.
           </p>
