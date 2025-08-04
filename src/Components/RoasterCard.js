@@ -66,7 +66,7 @@ export default function RoasterCard({ roaster, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col justify-between cursor-pointer hover:shadow-lg transition w-full max-w-xs mx-auto"
+      className="min-w-[320px] max-w-[420px] w-full h-[320px] bg-white rounded-2xl shadow-md overflow-hidden flex flex-col justify-between cursor-pointer hover:shadow-lg transition"
     >
       <div className="relative">
         {featured && (
@@ -80,13 +80,13 @@ export default function RoasterCard({ roaster, onClick }) {
           </span>
         )}
 
-        <div className="relative w-full h-40 sm:h-48 md:h-52 bg-white">
+        <div className="relative w-full h-60 bg-white">
           <Image
             src={imageUrl}
             alt={name}
             fill
             className="object-contain p-4"
-            sizes="(max-width: 768px) 100vw, 300px"
+            sizes="(max-width: 768px) 100vw, 420px"
           />
         </div>
       </div>
