@@ -29,6 +29,7 @@ export default function RoasterModal({ roaster, onClose }) {
 
   useEffect(() => {
     if (!_id) return;
+
     const fetchAvgRating = async () => {
       const { data, error } = await supabase
         .from('roaster_ratings')
@@ -38,8 +39,7 @@ export default function RoasterModal({ roaster, onClose }) {
       if (!error && data?.length) {
         const total = data.reduce((sum, r) => sum + r.rating, 0);
         const avg = total / data.length;
-        const roundedAvg = Math.round(avg * 100) / 100;
-        setAvgRating(roundedAvg);
+        setAvgRating(Math.round(avg * 100) / 100);
         setRatingCount(data.length);
       }
     };
