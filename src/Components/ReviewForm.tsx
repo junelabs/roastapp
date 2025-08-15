@@ -77,7 +77,10 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
     if (!file || !userId) return null;
     const ext = file.name.split('.').pop() || 'jpg';
     const path = `${userId}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('review-photos').upload(path, file, { cacheControl: '3600', upsert: false });
+    const { error } = await supabase.storage.from('review-photos').upload(path, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
     if (error) throw error;
     const { data } = supabase.storage.from('review-photos').getPublicUrl(path);
     return data.publicUrl ?? null;
@@ -142,7 +145,10 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
       <div className="rounded-xl border border-gray-200 p-6 bg-white">
         <h2 className="text-xl font-semibold">Thanks for your review! ☕️</h2>
         <p className="mt-2 text-gray-600">Your review helps other coffee lovers discover {roasterName}.</p>
-        <Link href="/" className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-white font-medium hover:bg-black/90">
+        <Link
+          href="/"
+          className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-white font-medium hover:bg-black/90"
+        >
           Back to home
         </Link>
       </div>
@@ -151,7 +157,6 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Rating */}
       <div>
         <label className="block text-sm font-medium mb-1">Your rating</label>
         <div className="flex items-center gap-2">
@@ -169,7 +174,6 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
         </div>
       </div>
 
-      {/* Coffee */}
       <div>
         <label className="block text-sm font-medium mb-1">Coffee</label>
         <div className="flex flex-col gap-2">
@@ -186,7 +190,6 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
         </div>
       </div>
 
-      {/* Brew Method */}
       <div>
         <label className="block text-sm font-medium mb-1">Brew method (optional)</label>
         <select value={brewMethod} onChange={(e) => setBrewMethod(e.target.value)} className="w-full rounded-md border border-gray-300 px-3 py-2">
@@ -195,13 +198,11 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
         </select>
       </div>
 
-      {/* Notes */}
       <div>
         <label className="block text-sm font-medium mb-1">Notes & feedback (optional)</label>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} className="w-full rounded-md border border-gray-300 px-3 py-2" placeholder="What stood out about this coffee?" />
       </div>
 
-      {/* Photo */}
       <div>
         <label className="block text-sm font-medium mb-1">Photo (optional)</label>
         <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="block w-full text-sm text-gray-700 file:mr-4 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-2 hover:file:bg-gray-50" />

@@ -1,17 +1,11 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import ReviewForm from '../../../Components/ReviewForm'; // or '@/Components/ReviewForm'
+import ReviewForm from '../../../Components/ReviewForm'; // use alias if your tsconfig paths are set
 import { client } from '@/lib/sanity';
 
 export const revalidate = 0;
 
-type Roaster = {
-  _id: string;
-  name: string;
-  slug: string;
-  logoUrl?: string;
-  coffees?: { name?: string }[];
-};
+type Roaster = { _id: string; name: string; slug: string; logoUrl?: string; coffees?: { name?: string }[] };
 
 async function getRoaster(slug: string): Promise<Roaster | null> {
   const query = `*[_type == "roaster" && slug.current == $slug][0]{
