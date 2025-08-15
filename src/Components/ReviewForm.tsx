@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
 type Props = {
@@ -10,9 +11,22 @@ type Props = {
   coffeeOptions: string[];
 };
 
-const BREW_METHODS = ['Pour Over', 'Espresso', 'French Press', 'Aeropress', 'Moka Pot', 'Cold Brew', 'Other'];
+const BREW_METHODS = [
+  'Pour Over',
+  'Espresso',
+  'French Press',
+  'Aeropress',
+  'Moka Pot',
+  'Cold Brew',
+  'Other',
+];
 
-export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffeeOptions }: Props) {
+export default function ReviewForm({
+  roasterId,
+  roasterSlug,
+  roasterName,
+  coffeeOptions,
+}: Props) {
   const [userId, setUserId] = useState<string | null>(null);
 
   // form state
@@ -22,7 +36,7 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
   const [notes, setNotes] = useState<string>('');
   const [file, setFile] = useState<File | null>(null);
 
-  // otp/login prompt
+  // login prompt
   const [needLogin, setNeedLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [sendingLink, setSendingLink] = useState(false);
@@ -32,9 +46,10 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
   const [submitted, setSubmitted] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  // draft key per roaster
   const draftKey = useMemo(() => `er_review_draft__${roasterSlug}`, [roasterSlug]);
 
-  // Load auth + draft
+  // auth + restore draft
   useEffect(() => {
     let unsub: (() => void) | undefined;
 
@@ -50,7 +65,7 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
       });
       unsub = () => subscription.unsubscribe();
 
-      // restore draft (if any)
+      // restore draft
       try {
         const raw = localStorage.getItem(draftKey);
         if (raw) {
@@ -62,7 +77,9 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
             setNotes(d.notes || '');
           }
         }
-      } catch {}
+      } catch {
+        // ignore
+      }
     })();
 
     return () => {
@@ -70,34 +87,39 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
     };
   }, [draftKey, roasterSlug]);
 
-  // Save draft whenever fields change
+  // save draft
   useEffect(() => {
     const draft = { roasterSlug, rating, coffeeName, brewMethod, notes };
     try {
       localStorage.setItem(draftKey, JSON.stringify(draft));
-    } catch {}
+    } catch {
+      // ignore
+    }
   }, [draftKey, roasterSlug, rating, coffeeName, brewMethod, notes]);
 
   const uploadPhoto = async (): Promise<string | null> => {
     if (!file || !userId) return null;
     const ext = file.name.split('.').pop() || 'jpg';
     const path = `${userId}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('review-photos').upload(path, file, {
-      cacheControl: '3600',
-      upsert: false,
-    });
+
+    const { error } = await supabase.storage
+      .from('review-photos')
+      .upload(path, file, { cacheControl: '3600', upsert: false });
     if (error) throw error;
+
     const { data } = supabase.storage.from('review-photos').getPublicUrl(path);
     return data.publicUrl ?? null;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr(null);
 
-    if (!rating) return setErr('Please select a star rating.');
+    if (!rating) {
+      setErr('Please select a star rating.');
+      return;
+    }
 
-    // If not logged in, prompt for email + send OTP
     if (!userId) {
       setNeedLogin(true);
       return;
@@ -105,6 +127,7 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
 
     try {
       setSubmitting(true);
+
       let photoUrl: string | null = null;
       if (file) {
         photoUrl = await uploadPhoto();
@@ -124,10 +147,11 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
 
       if (error) throw error;
 
-      // clear draft
       try {
         localStorage.removeItem(draftKey);
-      } catch {}
+      } catch {
+        // ignore
+      }
       setSubmitted(true);
     } catch (e: any) {
       setErr(e?.message || 'Something went wrong. Please try again.');
@@ -136,8 +160,8 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
     }
   };
 
-  const sendMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const sendMagicLink = async () => {
+    setErr(null);
     if (!/^\S+@\S+\.\S+$/.test(email)) {
       setErr('Please enter a valid email.');
       return;
@@ -149,8 +173,8 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
         options: { emailRedirectTo: `${window.location.origin}/review/${roasterSlug}` },
       });
       if (error) throw error;
-      setErr(null);
-      alert('Check your email for a login link. Once you’re back, press "Publish review".');
+      // small UX nudge
+      alert('Check your email for a login link. Return here to publish your review.');
     } catch (e: any) {
       setErr(e?.message || 'Could not send login link.');
     } finally {
@@ -163,14 +187,14 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
       <div className="rounded-xl border border-gray-200 p-6 bg-white">
         <h2 className="text-xl font-semibold">Thanks for your review! ☕️</h2>
         <p className="mt-2 text-gray-600">
-          Your review helps other coffee lovers discover {roasterName}. Want to add another?
+          Your review helps other coffee lovers discover {roasterName}.
         </p>
-        <a
+        <Link
           href="/"
           className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-white font-medium hover:bg-black/90"
         >
           Back to home
-        </a>
+        </Link>
       </div>
     );
   }
@@ -268,7 +292,7 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
       {/* Error */}
       {err && <p className="text-sm text-red-600">{err}</p>}
 
-      {/* Submit / or login prompt */}
+      {/* Submit + login prompt */}
       <div className="flex flex-col gap-3">
         <button
           type="submit"
@@ -283,7 +307,7 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
             <p className="text-sm text-gray-700">
               You’ll need a free account to publish your review. Enter your email to get a magic link.
             </p>
-            <form onSubmit={sendMagicLink} className="mt-2 flex gap-2">
+            <div className="mt-2 flex gap-2">
               <input
                 type="email"
                 value={email}
@@ -292,13 +316,14 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
                 className="flex-1 rounded-md border border-gray-300 px-3 py-2"
               />
               <button
-                type="submit"
+                type="button"
+                onClick={sendMagicLink}
                 disabled={sendingLink}
                 className="rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60"
               >
                 {sendingLink ? 'Sending…' : 'Send link'}
               </button>
-            </form>
+            </div>
             <p className="mt-1 text-xs text-gray-500">
               By continuing, you agree to receive our coffee newsletter (unsubscribe anytime).
             </p>
