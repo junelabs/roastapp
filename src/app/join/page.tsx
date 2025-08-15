@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function LoginPage() {
+export default function JoinPage() {
   const [email, setEmail] = useState<string>('');
   const [sent, setSent] = useState<boolean>(false);
   const [err, setErr] = useState<string | null>(null);
@@ -42,8 +42,10 @@ export default function LoginPage() {
   return (
     <main className="min-h-[70vh] flex items-center justify-center px-6">
       <div className="w-full max-w-md rounded-2xl border border-gray-200 p-6 shadow-sm bg-white">
-        <h1 className="text-2xl font-semibold">Log in</h1>
-        <p className="mt-1 text-sm text-gray-600">We’ll email you a secure link to sign in.</p>
+        <h1 className="text-2xl font-semibold">Join Every Roast</h1>
+        <p className="mt-1 text-sm text-gray-600">
+          Create a free account. We’ll email you a secure link to sign in.
+        </p>
 
         {sent ? (
           <div className="mt-6 rounded-md bg-green-50 text-green-800 p-3 text-sm">
@@ -64,9 +66,12 @@ export default function LoginPage() {
               disabled={loading}
               className="mt-3 w-full h-10 rounded-md bg-black text-white font-semibold hover:bg-black/90 disabled:opacity-60"
             >
-              {loading ? 'Sending…' : 'Email me the link'}
+              {loading ? 'Sending…' : 'Send me a login link'}
             </button>
             {err && <p className="mt-2 text-sm text-red-600">{err}</p>}
+            <p className="mt-3 text-xs text-gray-500">
+              By continuing, you agree to receive our coffee newsletter (unsubscribe anytime).
+            </p>
           </form>
         )}
       </div>
