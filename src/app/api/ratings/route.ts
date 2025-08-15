@@ -1,16 +1,32 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // server-only
-);
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'; // ensure Node runtime (not Edge)
+
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  // IMPORTANT: do NOT throw at import time — return null and handle in handler
+  if (!url || !key) return null;
+  return createClient(url, key);
+}
 
 export async function POST(req: Request) {
   try {
-    const { slugs } = (await req.json()) as { slugs: string[] };
-    if (!Array.isArray(slugs) || slugs.length === 0) {
+    const body = await req.json().catch(() => ({}));
+    const slugs: string[] = Array.isArray(body?.slugs) ? body.slugs : [];
+
+    if (slugs.length === 0) {
       return NextResponse.json({ error: 'No slugs provided' }, { status: 400 });
+    }
+
+    const supabase = getAdminClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Supabase env not configured on server (URL or SERVICE_ROLE_KEY missing).' },
+        { status: 500 }
+      );
     }
 
     const { data, error } = await supabase
@@ -18,7 +34,9 @@ export async function POST(req: Request) {
       .select('roaster_slug,rating')
       .in('roaster_slug', slugs);
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
     const map = new Map<string, { sum: number; count: number }>();
     for (const r of data ?? []) {
