@@ -26,6 +26,7 @@ const ROASTERS_QUERY = `
   likes,
   founded,
   certifications,
+  "slug": slug.current,
 
   // Structured fields for the modal
   cafes[]{ name, address, city, state, country, website },
@@ -33,9 +34,6 @@ const ROASTERS_QUERY = `
     _id, method, ratio, dose, yield, grind, temp, time, notes,
     steps[]{ order, text }
   }
-
-  // If you still need all coffees inline, re-enable:
-  // coffees[]->
 }
 `;
 
@@ -49,7 +47,6 @@ const FEATURED_RELEASES_QUERY = `
     name,
     location,
     "logoUrl": coalesce(logo.asset->url, image.asset->url),
-    // Make the roaster "modal-ready":
     "imageUrl": coalesce(logo.asset->url, image.asset->url),
     website,
     rating,
@@ -63,6 +60,7 @@ const FEATURED_RELEASES_QUERY = `
     likes,
     founded,
     certifications,
+    "slug": slug.current,
     cafes[]{ name, address, city, state, country, website },
     brewGuides[]->{
       _id, method, ratio, dose, yield, grind, temp, time, notes,
@@ -72,12 +70,41 @@ const FEATURED_RELEASES_QUERY = `
 }
 `;
 
+async function getRatings(slugs) {
+  if (!slugs?.length) return {};
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const res = await fetch(`${base}/api/ratings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ slugs }),
+  });
+  if (!res.ok) {
+    console.error('ratings fetch failed', await res.text());
+    return {};
+  }
+  return await res.json(); // { [slug]: { avg, count } }
+}
+
 export default async function Home() {
   const roasters = await client.fetch(ROASTERS_QUERY);
   const featuredCoffees = await client.fetch(FEATURED_RELEASES_QUERY);
 
-  const featuredRoasters = roasters.filter((r) => r.featured);
-  const nonFeaturedRoasters = roasters.filter((r) => !r.featured);
+  const slugs = roasters.map(r => r.slug).filter(Boolean);
+  const live = await getRatings(slugs);
+
+  // Merge live aggregates into roaster objects
+  const roastersWithRatings = roasters.map(r => {
+    const agg = live[r.slug];
+    return {
+      ...r,
+      rating: typeof agg?.avg === 'number' ? agg.avg : r.rating ?? null,
+      ratingCount: typeof agg?.count === 'number' ? agg.count : r.ratingCount ?? 0,
+    };
+  });
+
+  const featuredRoasters = roastersWithRatings.filter((r) => r.featured);
+  const nonFeaturedRoasters = roastersWithRatings.filter((r) => !r.featured);
 
   return (
     <main className="bg-gray-100 min-h-screen flex flex-col justify-between">
