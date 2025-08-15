@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import ReviewForm from '../../../Components/ReviewForm'; // use alias if your tsconfig paths are set
+import ReviewForm from '../../../Components/ReviewForm';
 import { client } from '@/lib/sanity';
 
 export const revalidate = 0;
@@ -18,8 +18,13 @@ async function getRoaster(slug: string): Promise<Roaster | null> {
   return (await client.fetch(query, { slug })) as Roaster | null;
 }
 
-export default async function ReviewPage({ params }: { params: { slug: string } }) {
-  const roaster = await getRoaster(params.slug);
+export default async function ReviewPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params; // 👈 await the promise
+  const roaster = await getRoaster(slug);
   if (!roaster?._id) notFound();
 
   const coffeeOptions: string[] = Array.isArray(roaster.coffees)
@@ -40,7 +45,9 @@ export default async function ReviewPage({ params }: { params: { slug: string } 
         )}
         <div>
           <h1 className="text-2xl font-semibold">Review {roaster.name}</h1>
-          <p className="text-sm text-gray-600">Share your experience and help other coffee lovers discover great roasts.</p>
+          <p className="text-sm text-gray-600">
+            Share your experience and help other coffee lovers discover great roasts.
+          </p>
         </div>
       </div>
 
