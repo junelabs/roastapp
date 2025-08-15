@@ -16,50 +16,39 @@ export default function RoasterCard({ roaster, onClick }) {
     countryFlag = '🇺🇸',
   } = roaster;
 
-  const renderStars = (rating) => {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
+  const renderStars = (value) => {
+    if (typeof value !== 'number') return null;
     const stars = [];
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <svg key={`full-${i}`} className="w-4 h-4 fill-yellow-500" viewBox="0 0 24 24">
-          <path d="M12 .587l3.668 7.568L24 9.75l-6 5.888L19.416 24 12 19.812 4.584 24 6 15.638 0 9.75l8.332-1.595z" />
-        </svg>
-      );
+    for (let i = 1; i <= 5; i++) {
+      const diff = value - i;
+      const full = diff >= 0;
+      const half = !full && value >= i - 0.75 && value < i - 0.25; // 0.25..0.75 window
+      if (full) {
+        stars.push(
+          <svg key={`full-${i}`} className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M12 .587l3.668 7.568L24 9.75l-6 5.888L19.416 24 12 19.812 4.584 24 6 15.638 0 9.75l8.332-1.595z" />
+          </svg>
+        );
+      } else if (half) {
+        stars.push(
+          <svg key={`half-${i}`} className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" aria-hidden="true">
+            <defs>
+              <clipPath id={`half-${i}`}>
+                <rect x="0" y="0" width="12" height="24" />
+              </clipPath>
+            </defs>
+            <path d="M12 .587l3.668 7.568L24 9.75l-6 5.888L19.416 24 12 19.812 4.584 24 6 15.638 0 9.75l8.332-1.595z" className="fill-gray-300" />
+            <path d="M12 .587l3.668 7.568L24 9.75l-6 5.888L19.416 24 12 19.812 4.584 24 6 15.638 0 9.75l8.332-1.595z" className="fill-current" clipPath={`url(#half-${i})`} />
+          </svg>
+        );
+      } else {
+        stars.push(
+          <svg key={`empty-${i}`} className="w-4 h-4 text-gray-300" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M12 .587l3.668 7.568L24 9.75l-6 5.888L19.416 24 12 19.812 4.584 24 6 15.638 0 9.75l8.332-1.595z" />
+          </svg>
+        );
+      }
     }
-
-    if (hasHalfStar) {
-      stars.push(
-        <svg key="half" className="w-4 h-4" viewBox="0 0 24 24">
-          <path
-            d="M12 .587l3.668 7.568L24 9.75l-6 5.888L19.416 24 12 19.812 4.584 24 6 15.638 0 9.75l8.332-1.595z"
-            className="fill-gray-300"
-          />
-          <defs>
-            <clipPath id="leftHalf">
-              <rect x="0" y="0" width="12" height="24" />
-            </clipPath>
-          </defs>
-          <path
-            d="M12 .587l3.668 7.568L24 9.75l-6 5.888L19.416 24 12 19.812 4.584 24 6 15.638 0 9.75l8.332-1.595z"
-            className="fill-yellow-500"
-            clipPath="url(#leftHalf)"
-          />
-        </svg>
-      );
-    }
-
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <svg key={`empty-${i}`} className="w-4 h-4 fill-gray-300" viewBox="0 0 24 24">
-          <path d="M12 .587l3.668 7.568L24 9.75l-6 5.888L19.416 24 12 19.812 4.584 24 6 15.638 0 9.75l8.332-1.595z" />
-        </svg>
-      );
-    }
-
     return stars;
   };
 
@@ -81,13 +70,15 @@ export default function RoasterCard({ roaster, onClick }) {
         )}
 
         <div className="relative w-full h-60 bg-white">
-          <Image
-            src={imageUrl}
-            alt={name}
-            fill
-            className="object-contain p-4"
-            sizes="(max-width: 768px) 100vw, 420px"
-          />
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={name}
+              fill
+              className="object-contain p-4"
+              sizes="(max-width: 768px) 100vw, 420px"
+            />
+          ) : null}
         </div>
       </div>
 
@@ -101,8 +92,10 @@ export default function RoasterCard({ roaster, onClick }) {
 
         {ratingCount > 0 && typeof rating === 'number' ? (
           <div className="flex items-center text-sm mt-1 gap-1">
-            <span className="text-gray-700 font-medium">{rating.toFixed(1)}</span>
-            <div className="flex items-center">{renderStars(rating)}</div>
+            <span className="text-gray-700 font-medium tabular-nums">{Number(rating).toFixed(2)}</span>
+            <div className="flex items-center" aria-label={`Average ${Number(rating).toFixed(2)} from ${ratingCount} reviews`}>
+              {renderStars(Number(rating))}
+            </div>
             <span className="text-gray-500 text-xs">({ratingCount})</span>
           </div>
         ) : (
