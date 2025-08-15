@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -22,7 +23,6 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
   const [notes, setNotes] = useState<string>('');
   const [file, setFile] = useState<File | null>(null);
 
-  const [needLogin, setNeedLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [sendingLink, setSendingLink] = useState(false);
 
@@ -91,7 +91,7 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
     setErr(null);
     if (!rating) return setErr('Please select a star rating.');
     if (!userId) {
-      setNeedLogin(true);
+      setErr('Please log in via the magic link first.');
       return;
     }
 
@@ -145,10 +145,7 @@ export default function ReviewForm({ roasterId, roasterSlug, roasterName, coffee
       <div className="rounded-xl border border-gray-200 p-6 bg-white">
         <h2 className="text-xl font-semibold">Thanks for your review! ☕️</h2>
         <p className="mt-2 text-gray-600">Your review helps other coffee lovers discover {roasterName}.</p>
-        <Link
-          href="/"
-          className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-white font-medium hover:bg-black/90"
-        >
+        <Link href="/" className="mt-4 inline-flex items-center rounded-md bg-black px-4 py-2 text-white font-medium hover:bg-black/90">
           Back to home
         </Link>
       </div>
