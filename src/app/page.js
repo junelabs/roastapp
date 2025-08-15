@@ -4,9 +4,6 @@ import Navbar from '@/Components/Navbar';
 import RoasterGrid from '@/Components/RoasterGrid';
 import Link from 'next/link';
 
-// (optional) Incremental Static Regeneration
-// export const revalidate = 60;
-
 const ROASTERS_QUERY = `
 *[_type == "roaster"]{
   _id,
@@ -27,8 +24,6 @@ const ROASTERS_QUERY = `
   founded,
   certifications,
   "slug": slug.current,
-
-  // Structured fields for the modal
   cafes[]{ name, address, city, state, country, website },
   brewGuides[]->{
     _id, method, ratio, dose, yield, grind, temp, time, notes,
@@ -93,7 +88,6 @@ export default async function Home() {
   const slugs = roasters.map(r => r.slug).filter(Boolean);
   const live = await getRatings(slugs);
 
-  // Merge live aggregates into roaster objects
   const roastersWithRatings = roasters.map(r => {
     const agg = live[r.slug];
     return {
