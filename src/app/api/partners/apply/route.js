@@ -5,17 +5,17 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 function getAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   if (!url || !key) return null;
   return createClient(url, key);
 }
 
-export async function POST(req: Request) {
+export async function POST(req) {
   try {
     const body = await req.json();
 
-    const required = ['name','email','roaster_name'];
+    const required = ['name', 'email', 'roaster_name'];
     for (const k of required) {
       if (!body?.[k] || String(body[k]).trim() === '') {
         return NextResponse.json({ error: `Missing ${k}` }, { status: 400 });
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true }, { status: 200 });
-  } catch (e: any) {
+  } catch (e) {
     return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500 });
   }
 }
