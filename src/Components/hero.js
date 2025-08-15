@@ -8,7 +8,6 @@ export default function Hero() {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
   const [firstName, setFirstName] = useState(null);
 
-  // simple helper to grab a name from user metadata/email
   const extractFirst = (user) => {
     if (!user) return null;
     const metaName = user.user_metadata && user.user_metadata.full_name;
@@ -33,7 +32,6 @@ export default function Hero() {
         setFirstName(extractFirst(u));
       });
 
-      // store for cleanup
       subscription = listener?.data?.subscription;
     })();
 
@@ -89,8 +87,7 @@ export default function Hero() {
                 Discover the world&apos;s best coffee roasters.
               </h1>
               <p className="text-lg sm:text-xl mb-6 max-w-2xl">
-                Every two weeks, The Roast Report brings you a roaster spotlight, seasonal picks, and quick brew tips —
-                so you can skip the guesswork and sip something incredible.
+                Find trusted roasters, unique coffees, and learn from in-depth profiles — all curated for true specialty coffee enthusiasts.
               </p>
               <div className="flex flex-wrap gap-3">
                 <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
