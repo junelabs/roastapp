@@ -1,23 +1,31 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // server only
-);
+export const dynamic = 'force-dynamic'; // avoid static optimization
+
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    // Don’t throw at import time — only when route is actually called
+    throw new Error('Missing Supabase env (URL or SERVICE_ROLE_KEY).');
+  }
+  return createClient(url, key);
+}
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
     // Basic validation
-    const required = ['name','email','roaster_name'];
+    const required = ['name', 'email', 'roaster_name'];
     for (const k of required) {
       if (!body?.[k] || String(body[k]).trim() === '') {
         return NextResponse.json({ error: `Missing ${k}` }, { status: 400 });
       }
     }
 
+    const supabase = getAdminClient();
     const { error } = await supabase.from('partner_applications').insert({
       name: String(body.name).trim(),
       email: String(body.email).trim().toLowerCase(),
@@ -33,7 +41,6 @@ export async function POST(req: Request) {
     });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500 });
