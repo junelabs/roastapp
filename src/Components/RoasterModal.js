@@ -3,6 +3,7 @@
 import { Fragment } from 'react';
 import { Dialog, Transition, Tab } from '@headlessui/react';
 import Image from 'next/image';
+import BrewGuidesTab from '@/Components/BrewGuidesTab';
 
 export default function RoasterModal({ roaster, onClose }) {
   if (!roaster) return null;
@@ -15,7 +16,6 @@ export default function RoasterModal({ roaster, onClose }) {
     description,
     website,
     cafes,
-    brewGuides = [],
     rating,        // average rating from Sanity
     ratingCount,   // rating count from Sanity
   } = roaster;
@@ -56,7 +56,7 @@ export default function RoasterModal({ roaster, onClose }) {
                 overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5
               "
             >
-              {/* Sticky header + tabs (non‑scrolling), scrolling content below */}
+              {/* Sticky header + tabs (non-scrolling), scrolling content below */}
               <Tab.Group as={Fragment}>
                 <div className="flex h-full flex-col">
                   {/* Header */}
@@ -164,38 +164,9 @@ export default function RoasterModal({ roaster, onClose }) {
                           )}
                         </Tab.Panel>
 
-                        {/* Brew Guides */}
+                        {/* Brew Guides (fetch-driven) */}
                         <Tab.Panel>
-                          {brewGuides?.length ? (
-                            <div className="space-y-5">
-                              {brewGuides.map((g) => (
-                                <div key={g._id || g.method} className="rounded-2xl border border-gray-200 p-5">
-                                  <h3 className="text-base md:text-lg font-semibold text-gray-900">{g.method}</h3>
-                                  <p className="mt-1 text-sm md:text-[15px] text-gray-700">
-                                    {[
-                                      g.ratio && `Ratio ${g.ratio}`,
-                                      g.dose && `Dose ${g.dose}`,
-                                      g.yield && `Yield ${g.yield}`,
-                                      g.grind && `Grind ${g.grind}`,
-                                      g.temp && `Temp ${g.temp}`,
-                                      g.time && `Time ${g.time}`,
-                                    ].filter(Boolean).join(' • ')}
-                                  </p>
-                                  {g.notes && <p className="mt-2 text-sm text-gray-700">{g.notes}</p>}
-                                  {g.steps?.length ? (
-                                    <ol className="mt-3 list-decimal pl-5 text-sm md:text-[15px] text-gray-800 space-y-1.5">
-                                      {g.steps
-                                        .slice()
-                                        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                                        .map((s, i) => <li key={i}>{s.text}</li>)}
-                                    </ol>
-                                  ) : null}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <Empty text="No brew guides yet." />
-                          )}
+                          <BrewGuidesTab roasterId={_id} />
                         </Tab.Panel>
                       </Tab.Panels>
                     </div>

@@ -1,7 +1,7 @@
+// app/layout.tsx
 import './globals.css';
 import { AuthProvider } from '../Components/AuthProvider';
-// Or use ../../ if layout.tsx is deeper inside folders like /app/some/page
-
+import Script from 'next/script';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,10 +10,30 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const isProd = process.env.NODE_ENV === 'production';
+
   return (
     <html lang="en">
       <body>
         <AuthProvider>{children}</AuthProvider>
+
+        {/* Simple Analytics (load on all pages; prod-only to avoid polluting local dev) */}
+        {isProd && (
+          <>
+            <Script
+              src="https://scripts.simpleanalyticscdn.com/latest.js"
+              data-collect-dnt="true"
+              async
+            />
+            <noscript>
+              <img
+                src="https://queue.simpleanalyticscdn.com/noscript.gif"
+                alt=""
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </noscript>
+          </>
+        )}
       </body>
     </html>
   );

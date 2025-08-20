@@ -27,6 +27,6 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/app/partners/apply/page.js", "src/app/partners/page.js", "src/app/api/partners/apply/route.js", "src/app/api/ratings/route.js"  ],
   "exclude": ["node_modules"]
 }
