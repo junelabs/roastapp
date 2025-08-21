@@ -1,6 +1,9 @@
-// src/lib/queries/brewGuides.js
 export const guidesForRoaster = `
-*[_type == "brewGuide" && archived != true && references($roasterId)]{
+*[
+  _type == "brewGuide" &&
+  archived != true &&
+  roaster._ref in [$roasterId, $publishedId]
+]{
   _id, method, ratio, dose, yield, grind, tempC, timeTotal, steps,
   editorStatus, sourceUrl,
   "roaster": roaster->{ _id, name, "imageUrl": image.asset->url }

@@ -7,7 +7,14 @@ export async function GET(_req, { params }) {
     const { id } = params || {}
     if (!id) return NextResponse.json({ guides: [] }, { status: 200 })
 
-    const guides = await client.fetch(guidesForRoaster, { roasterId: id })
+    // Normalize to published id as well (handles draft/published mismatch)
+    const publishedId = id.startsWith('drafts.') ? id.slice('drafts.'.length) : id
+
+    const guides = await client.fetch(guidesForRoaster, {
+      roasterId: id,
+      publishedId,
+    })
+
     return NextResponse.json({ guides })
   } catch (err) {
     console.error('Guides API error:', err)
