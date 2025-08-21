@@ -7,7 +7,6 @@ export async function GET(_req, { params }) {
     const { id } = params || {}
     if (!id) return NextResponse.json({ guides: [] }, { status: 200 })
 
-    // Normalize to published id as well (handles draft/published mismatch)
     const publishedId = id.startsWith('drafts.') ? id.slice('drafts.'.length) : id
 
     const guides = await client.fetch(guidesForRoaster, {

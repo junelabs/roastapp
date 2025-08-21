@@ -2,7 +2,11 @@ export const guidesForRoaster = `
 *[
   _type == "brewGuide" &&
   archived != true &&
-  roaster._ref in [$roasterId, $publishedId]
+  (
+    references([$roasterId, $publishedId]) ||
+    roaster._ref in [$roasterId, $publishedId] ||
+    roasterRef in [$roasterId, $publishedId]
+  )
 ]{
   _id, method, ratio, dose, yield, grind, tempC, timeTotal, steps,
   editorStatus, sourceUrl,
