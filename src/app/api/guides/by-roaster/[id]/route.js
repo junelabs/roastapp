@@ -1,22 +1,21 @@
 import { NextResponse } from 'next/server'
 import { client } from '@/lib/sanity'
-import { guidesForRoaster } from '@/lib/queries/brewGuides'
 
 export async function GET(_req, { params }) {
-  try {
-    const { id } = params || {}
-    if (!id) return NextResponse.json({ guides: [] }, { status: 200 })
+  const { id } = params || {}
+  const publishedId = id?.startsWith('drafts.') ? id.slice('drafts.'.length) : id
+  const ids = [id, publishedId].filter(Boolean)
 
-    const publishedId = id.startsWith('drafts.') ? id.slice('drafts.'.length) : id
+  const [countReferences, countDirectRef, countStringRef, sample] = await Promise.all([
+    client.fetch('count(*[_type=="brewGuide" && references($ids)])', { ids }),
+    client.fetch('count(*[_type=="brewGuide" && roaster._ref in $ids])', { ids }),
+    client.fetch('count(*[_type=="brewGuide" && roasterRef in $ids])', { ids }),
+    client.fetch('*[_type=="brewGuide"][0]{_id, roaster, roasterRef, roasterId, _type}')
+  ])
 
-    const guides = await client.fetch(guidesForRoaster, {
-      roasterId: id,
-      publishedId,
-    })
-
-    return NextResponse.json({ guides })
-  } catch (err) {
-    console.error('Guides API error:', err)
-    return NextResponse.json({ guides: [], error: 'fail' }, { status: 500 })
-  }
+  return NextResponse.json({
+    idsTried: ids,
+    counts: { references: countReferences, roasterDotRef: countDirectRef, roasterRef: countStringRef },
+    sample
+  })
 }
