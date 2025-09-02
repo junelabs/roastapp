@@ -46,46 +46,70 @@ export default function BrewGuidesTab({ roasterId }) {
   if (!guides.length) return <div className="text-sm text-neutral-500 py-6">No brew guides yet.</div>
 
   return (
-    <div className="divide-y divide-neutral-200">
+    <div className="grid gap-6 sm:grid-cols-2">
       {guides.map(g => (
-        <div key={g._id} className="py-4 flex items-start gap-4">
-          <span className="shrink-0 inline-block rounded-full px-3 py-1 text-xs border">
-            {labelMethod(g.method)}
-          </span>
-
-          <div className="flex-1">
-            <div className="text-sm font-medium">
-              {g.ratio} • {g.dose}g → {g?.yield?.value}{g?.yield?.unit} • {g.timeTotal}
-            </div>
-
-            <div className="text-xs text-neutral-600 mt-1">
-              {g.grind?.text ? `Grind: ${g.grind.text} • ` : ''}
-              {typeof g.tempC === 'number' ? `Temp: ${g.tempC}°C / ${cToF(g.tempC)}°F` : ''}
-            </div>
-
-            {Array.isArray(g.steps) && g.steps.length > 0 && (
-              <ol className="mt-2 text-sm list-decimal list-inside space-y-1">
-                {g.steps.slice(0, 3).map((s, i) => (
-                  <li key={i}>
-                    {s.text}{s.at ? ` @ ${s.at}` : ''}{typeof s.targetMass === 'number' ? ` → ${s.targetMass}g` : ''}
-                  </li>
-                ))}
-              </ol>
-            )}
-
-            <div className="mt-2 flex items-center gap-3">
-              <button
-                className="text-xs underline"
-                onClick={() => alert('Full guide view coming soon')}
-              >
-                View full guide
-              </button>
-              {g.sourceUrl && (
-                <a href={g.sourceUrl} target="_blank" rel="noreferrer" className="text-xs underline">
-                  Source
-                </a>
+        <div
+          key={g._id}
+          className="rounded-xl border border-neutral-200 p-5 shadow-sm hover:shadow-md transition"
+        >
+          {/* Header row */}
+          <div className="flex items-center gap-3">
+            <span className="shrink-0 inline-block rounded-full px-3 py-1 text-xs font-medium border bg-neutral-50">
+              {labelMethod(g.method)}
+            </span>
+            <div className="text-sm font-medium text-neutral-800">
+              {g.ratio && <span>{g.ratio}</span>}
+              {g.dose && <> • {g.dose}g</>}
+              {g?.yield?.value && (
+                <> → {g.yield.value}{g.yield.unit}</>
               )}
+              {g.timeTotal && <> • {g.timeTotal}</>}
             </div>
+          </div>
+
+          {/* Metadata */}
+          {(g.grind?.text || typeof g.tempC === 'number') && (
+            <div className="mt-2 text-xs text-neutral-600">
+              {g.grind?.text && `Grind: ${g.grind.text}`}
+              {g.grind?.text && typeof g.tempC === 'number' && ' • '}
+              {typeof g.tempC === 'number' && `Temp: ${g.tempC}°C / ${cToF(g.tempC)}°F`}
+            </div>
+          )}
+
+          {/* Steps */}
+          {Array.isArray(g.steps) && g.steps.length > 0 && (
+            <ol className="mt-4 space-y-1 text-sm text-neutral-800 list-decimal list-inside">
+              {g.steps.slice(0, 3).map((s, i) => (
+                <li key={i}>
+                  {s.text}
+                  {s.at ? ` @ ${s.at}` : ''}
+                  {typeof s.targetMass === 'number' ? ` → ${s.targetMass}g` : ''}
+                </li>
+              ))}
+              {g.steps.length > 3 && (
+                <li className="italic text-neutral-500">…more steps</li>
+              )}
+            </ol>
+          )}
+
+          {/* Footer actions */}
+          <div className="mt-4 flex items-center gap-4">
+            <button
+              className="text-xs font-medium text-blue-600 hover:underline"
+              onClick={() => alert('Full guide view coming soon')}
+            >
+              View full guide →
+            </button>
+            {g.sourceUrl && (
+              <a
+                href={g.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-medium text-neutral-600 hover:underline"
+              >
+                Source
+              </a>
+            )}
           </div>
         </div>
       ))}
