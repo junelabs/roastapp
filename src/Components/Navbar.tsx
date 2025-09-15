@@ -4,34 +4,42 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { Button } from '@/Components/ui/button';
+import DropsSignupModal from '@/Components/DropsSignupModal';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
 
+    // unsub will hold the cleanup function for the auth listener
     let unsub: (() => void) | undefined;
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      setIsLoggedIn(!!data.user);
 
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        setIsLoggedIn(!!session?.user);
+    (async () => {
+      // Initial user check
+      const { data: userData } = await supabase.auth.getUser();
+      setIsLoggedIn(Boolean(userData?.user));
+
+      // Subscribe to auth state changes
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+        setIsLoggedIn(Boolean(session?.user));
       });
 
-      unsub = () => subscription.unsubscribe();
+      // Provide a typed cleanup function
+      unsub = () => {
+        authListener?.subscription?.unsubscribe?.();
+      };
     })();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (unsub) unsub();
+      unsub?.();
     };
   }, []);
 
@@ -85,16 +93,23 @@ export default function Navbar() {
               >
                 Login
               </Link>
-              <Link
-                href="/join"
+              <Button
+                onClick={() => setModalOpen(true)}
                 className="bg-white text-black px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition"
               >
-                Join Every Roast →
-              </Link>
+                Get Drop Alerts →
+              </Button>
             </>
           )}
         </div>
       </div>
+
+      {/* Shared modal */}
+      <DropsSignupModal
+        open={modalOpen}
+        setOpen={setModalOpen}
+        source="navbar_button"
+      />
     </nav>
   );
 }

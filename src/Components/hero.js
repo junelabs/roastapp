@@ -3,10 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+import DropsSignupModal from '@/Components/DropsSignupModal';
 
 export default function Hero() {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
   const [firstName, setFirstName] = useState(null);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [prefillEmail, setPrefillEmail] = useState('');
 
   const extractFirst = (user) => {
     if (!user) return null;
@@ -41,6 +45,15 @@ export default function Hero() {
       }
     };
   }, []);
+
+  const handleNotifySubmit = (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get('email') || '').trim();
+    if (!email) return;
+    setPrefillEmail(email);
+    setModalOpen(true);
+  };
 
   return (
     <section
@@ -104,32 +117,43 @@ export default function Hero() {
           )}
         </div>
 
-        {/* Right side: newsletter only when logged out */}
+        {/* Right side: Drop Alerts card (only when logged out) */}
         {isLoggedIn === false && (
           <div className="relative z-10 bg-white/40 backdrop-blur-md rounded-lg shadow-lg p-8 w-full max-w-sm text-gray-900 mt-10 lg:mt-0">
-            <h3 className="text-lg font-semibold mb-2">Get the Roast Report</h3>
+            <h3 className="text-lg font-semibold mb-2">Get Drop Alerts</h3>
             <p className="text-sm mb-4">
-              A free biweekly newsletter featuring 1 roaster spotlight, seasonal coffees, and quick brew tips.
+              Monthly limited releases. Be first to know when a new Drop goes live.
             </p>
-            <form>
+
+            <form onSubmit={handleNotifySubmit}>
               <input
+                name="email"
                 type="email"
                 placeholder="Enter your email"
                 className="w-full border border-gray-300 rounded-md px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                required
               />
               <button
                 type="submit"
                 className="w-full bg-black text-white rounded-md py-2 font-semibold hover:bg-gray-800 transition"
               >
-                Join the list
+                Join for free →
               </button>
             </form>
+
             <p className="text-xs mt-3 text-gray-600 text-center">
-              Enjoyed by coffee enthusiasts around the globe.
+              No spam. Unsubscribe anytime.
             </p>
           </div>
         )}
       </div>
+
+      <DropsSignupModal
+        open={modalOpen}
+        setOpen={setModalOpen}
+        initialEmail={prefillEmail}
+        source={prefillEmail ? 'hero' : 'hero_top_button'}
+      />
     </section>
   );
 }
